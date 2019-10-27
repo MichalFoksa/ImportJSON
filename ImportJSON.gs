@@ -368,13 +368,31 @@ function parseJSONObject_(object, query, options, includeFunc, transformFunc) {
 function parseData_(headers, data, path, state, value, query, options, includeFunc) {
   var dataInserted = false;
 
-  if (Array.isArray(value) && isObjectArray_(value)) {
-    for (var i = 0; i < value.length; i++) {
-      if (parseData_(headers, data, path, state, value[i], query, options, includeFunc)) {
-        dataInserted = true;
-
-        if (data[state.rowIndex]) {
-          state.rowIndex++;
+  if (Array.isArray(value)) {
+    if (isObjectArray_(value)) {
+      for (var i = 0; i < value.length; i++) {
+        if (parseData_(headers, data, path, state, value[i], query, options, includeFunc)) {
+          dataInserted = true;
+          
+          if (data[state.rowIndex]) {
+            state.rowIndex++;
+          }
+        }
+      }
+    } else if (isArrayOfArrays_(value)) {
+      for (var i = 0; i < value.length; i++) {
+        if (parseData_(headers, data, path, state, value[i], query, options, includeFunc)) {
+          dataInserted = true;
+          
+          if (data[state.rowIndex]) {
+            state.rowIndex++;
+          }
+        }
+      }
+    } else {
+      for (var i = 0; i < value.length; i++) {
+        if (parseData_(headers, data, path + "/" + i, state, value[i], query, options, includeFunc)) {
+          dataInserted = true; 
         }
       }
     }
@@ -444,6 +462,19 @@ function isObjectArray_(test) {
   for (var i = 0; i < test.length; i++) {
     if (isObject_(test[i])) {
       return true; 
+    }
+  }  
+
+  return false;
+}
+
+/** 
+ * Returns true if the given test value is an array containing at least one array; false otherwise.
+ */
+function isArrayOfArrays_(test) {
+  for (var i = 0; i < test.length; i++) {
+    if (Array.isArray(test[i])) {
+      return true; a
     }
   }  
 
